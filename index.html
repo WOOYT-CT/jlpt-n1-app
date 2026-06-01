@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JLPT N1 私人备考 App</title>
+  <meta name="theme-color" content="#0e7c66">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="N1备考">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icon.svg">
+  <style>
+    :root {
+      --ink:#17201f; --muted:#60706d; --line:#d9e1df; --paper:#fbfcfa;
+      --panel:#ffffff; --accent:#0e7c66; --accent2:#a84f2a; --soft:#eef7f4;
+      --gold:#9a6a12; --blue:#28678f; --danger:#a33d3d;
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans SC", "Noto Sans JP", sans-serif; color:var(--ink); background:var(--paper); }
+    header { position:sticky; top:0; z-index:5; background:rgba(251,252,250,.95); border-bottom:1px solid var(--line); backdrop-filter: blur(12px); }
+    .wrap { width:min(1180px, calc(100vw - 28px)); margin:auto; }
+    .top { display:flex; gap:16px; align-items:center; justify-content:space-between; padding:14px 0; }
+    h1 { font-size:22px; margin:0; letter-spacing:0; }
+    .sub { color:var(--muted); font-size:13px; margin-top:3px; }
+    nav { display:flex; gap:8px; flex-wrap:wrap; }
+    button, .linkbtn { border:1px solid var(--line); background:var(--panel); color:var(--ink); padding:9px 12px; border-radius:8px; cursor:pointer; font-weight:650; text-decoration:none; display:inline-flex; gap:6px; align-items:center; }
+    button.active { background:var(--accent); color:white; border-color:var(--accent); }
+    button.icon { width:38px; height:38px; padding:0; justify-content:center; font-size:17px; }
+    main { padding:18px 0 42px; }
+    .stats { display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; margin-bottom:14px; }
+    .stat { border:1px solid var(--line); background:var(--panel); border-radius:8px; padding:12px; }
+    .num { font-size:24px; font-weight:800; }
+    .label { color:var(--muted); font-size:12px; margin-top:2px; }
+    .toolbar { display:grid; grid-template-columns: 1fr 150px 150px 120px; gap:10px; margin:12px 0; }
+    input, select, textarea { width:100%; border:1px solid var(--line); border-radius:8px; background:white; padding:10px 11px; color:var(--ink); font:inherit; }
+    .grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px; }
+    .card { border:1px solid var(--line); background:var(--panel); border-radius:8px; padding:14px; }
+    .grammar-head { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+    .pattern { font-size:24px; font-weight:850; font-family:"Yu Gothic", "Noto Sans JP", sans-serif; line-height:1.25; }
+    .badge { display:inline-flex; align-items:center; border:1px solid var(--line); background:var(--soft); color:var(--accent); border-radius:999px; padding:3px 8px; font-size:12px; font-weight:700; white-space:nowrap; }
+    .meaning { font-size:16px; margin:9px 0 7px; }
+    .meta { color:var(--muted); line-height:1.65; font-size:14px; }
+    .jp { font-family:"Yu Gothic", "Noto Sans JP", sans-serif; color:#283533; }
+    .actions { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+    .tiny { font-size:12px; padding:6px 8px; }
+    .section { display:none; }
+    .section.active { display:block; }
+    .split { display:grid; grid-template-columns: 360px 1fr; gap:12px; }
+    .quizbox { min-height:280px; }
+    .choice { display:block; text-align:left; width:100%; margin:8px 0; }
+    .choice.good { border-color:var(--accent); background:#e8f5ef; }
+    .choice.bad { border-color:var(--danger); background:#fff0f0; }
+    .reading { display:grid; grid-template-columns: 300px 1fr; gap:12px; }
+    .list button { width:100%; justify-content:flex-start; margin-bottom:8px; text-align:left; }
+    .passage { line-height:1.9; font-size:16px; white-space:pre-wrap; }
+    .answer { display:none; border-left:4px solid var(--accent); padding:10px 12px; background:var(--soft); margin-top:10px; }
+    .answer.show { display:block; }
+    .source { font-size:13px; color:var(--muted); line-height:1.7; }
+    .pillrow { display:flex; gap:8px; flex-wrap:wrap; margin:10px 0; }
+    .progress { height:9px; background:#e5ecea; border-radius:999px; overflow:hidden; }
+    .bar { height:100%; background:linear-gradient(90deg, var(--accent), var(--gold)); width:0; }
+    @media (max-width: 860px) {
+      .top, .split, .reading { display:block; }
+      nav { margin-top:12px; }
+      .stats, .grid { grid-template-columns:1fr; }
+      .toolbar { grid-template-columns:1fr; }
+      .pattern { font-size:21px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap top">
+      <div>
+        <h1>JLPT N1 私人备考 App</h1>
+        <div class="sub">语法库、测验、阅读训练、官方公开样题入口。本地离线可用，学习状态保存在浏览器里。</div>
+      </div>
+      <nav>
+        <button data-tab="grammar" class="active">语法</button>
+        <button data-tab="quiz">测验</button>
+        <button data-tab="reading">阅读</button>
+        <button data-tab="plan">计划</button>
+        <button data-tab="sources">资料</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="grammar" class="section active">
+      <div class="stats">
+        <div class="stat"><div id="total" class="num">0</div><div class="label">内置 N1 语法/表达</div></div>
+        <div class="stat"><div id="favCount" class="num">0</div><div class="label">已收藏</div></div>
+        <div class="stat"><div id="doneCount" class="num">0</div><div class="label">已掌握</div></div>
+        <div class="stat"><div id="progressText" class="num">0%</div><div class="label">掌握进度</div><div class="progress"><div id="bar" class="bar"></div></div></div>
+      </div>
+      <div class="toolbar">
+        <input id="q" placeholder="搜索：中文意思 / 日文形态 / 例句">
+        <select id="cat"><option value="">全部类别</option></select>
+        <select id="view"><option value="">全部状态</option><option value="fav">只看收藏</option><option value="todo">未掌握</option><option value="done">已掌握</option></select>
+        <button id="reset">清空筛选</button>
+      </div>
+      <div id="grammarGrid" class="grid"></div>
+    </section>
+
+    <section id="quiz" class="section">
+      <div class="split">
+        <div class="card">
+          <h2>快速测验</h2>
+          <p class="meta">从当前语法库随机抽题。答对后可以直接标记掌握；想集中刷弱项，就先去语法页筛选未掌握。</p>
+          <button id="newQuiz">换一题</button>
+          <button id="markFromQuiz">标记掌握</button>
+        </div>
+        <div class="card quizbox">
+          <div id="quizContent"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="reading" class="section">
+      <div class="reading">
+        <div class="card list" id="readingList"></div>
+        <div class="card">
+          <h2 id="readTitle"></h2>
+          <div class="badge" id="readType"></div>
+          <p id="readLead" class="meta"></p>
+          <div id="passage" class="passage jp"></div>
+          <div id="questions"></div>
+          <button id="toggleAns">显示/隐藏答案解析</button>
+          <div id="readAnswer" class="answer"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="plan" class="section">
+      <div class="grid">
+        <div class="card">
+          <h2>N1 题型重点</h2>
+          <p class="meta">官方说明中，N1 的「语言知识（文字・词汇・语法）・阅读」为 110 分钟，听力为 55 分钟。语法题包括文法形式判断、句子组装、文章语法；阅读包括短文、中文、长文、统合理解、主张理解、信息检索。</p>
+          <div class="pillrow"><span class="badge">语法形式判断</span><span class="badge">句子组装</span><span class="badge">文章语法</span><span class="badge">长文主张</span><span class="badge">信息检索</span></div>
+        </div>
+        <div class="card">
+          <h2>30 天冲刺建议</h2>
+          <p class="meta">每天 20 个语法点：先看形态和中文，再遮住解释复述；阅读每天 1 篇短/中篇 + 每 3 天 1 篇长文；每周做一次 110 分钟限时整组训练。</p>
+          <textarea id="notes" rows="8" placeholder="写下今天计划或错题复盘，自动保存在本地。"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <section id="sources" class="section">
+      <div class="card">
+        <h2>资料来源与版权说明</h2>
+        <p class="source">JLPT 官方不公布“唯一官方 N1 语法清单”。本 App 的语法库是根据公开 N1 学习清单交叉整理并重新写成中文解释、接续形态和原创短例句，适合个人复习使用。</p>
+        <p class="source">阅读“真题”：官方公开页面提供样题 PDF 与答案 PDF。本 App 不内置受版权保护的历年真题全文；阅读页内置的是原创仿真练习，并附官方公开样题入口。</p>
+        <p><a class="linkbtn" href="https://www.jlpt.jp/e/samples/sample09.html?mode=pc" target="_blank">官方公开样题页面</a>
+        <a class="linkbtn" href="https://www.jlpt.jp/e/samples/pdf/N1-mondai.pdf" target="_blank">N1 样题 PDF</a>
+        <a class="linkbtn" href="https://www.jlpt.jp/e/samples/pdf/N1-kaitou.pdf" target="_blank">N1 答案 PDF</a></p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+const grammarRaw = `
+あえて|敢于、硬要、特意|あえて + Vる/しない/言う|副词/态度|反対されても、あえて新しい方法を試す。
+あくまでも|始终、到底、只不过|あくまでも + 文/名詞|副词/限定|これはあくまでも私の意見にすぎない。
+案の定|果然、不出所料|案の定 + 文|副词/结果|空が暗いと思ったら、案の定雨が降り出した。
+あらかじめ|预先、事先|あらかじめ + Vておく/名詞|副词/准备|会議の資料はあらかじめ読んでおいてください。
+あっての|正因为有…才有…|N + あっての + N|条件/评价|家族の支えあっての合格だ。
+いかなる|任何、无论怎样的|いかなる + N + も/ても|强调|いかなる理由があっても遅刻は認められない。
+いかんで|取决于…|N + いかんで/いかんによって|条件|結果いかんで次の方針を決める。
+いかんでは|根据…也许会…|N + いかんでは + 文|条件|交渉の結果いかんでは計画を変更する。
+いかんにかかわらず|不论…如何|N + いかんにかかわらず|让步|理由のいかんにかかわらず欠席扱いになる。
+いざ知らず|姑且不论…|N + はいざ知らず|对比|新人はいざ知らず、君が知らないのは困る。
+一概に〜ない|不能一概地…|一概に + 否定|否定|便利だからといって一概に良いとは言えない。
+今ひとつ|还差一点|今ひとつ + だ/ない|评价|説明は丁寧だが説得力が今ひとつだ。
+言わずもがな|不必说、不该说|言わずもがな + のN/文|固定|結果は言わずもがな、過程も大切だ。
+得る/得ない|能够/不可能|Vます去ます + 得る/得ない|可能|この情報だけでは判断し得ない。
+おいそれと〜ない|不能轻易地…|おいそれと + 否定|否定|高額な契約においそれと署名はできない。
+おして|不顾、冒着|N + をおして|让步|病気をおして発表会に出席した。
+おのずから|自然而然地|おのずから + V/分かる|副词|努力を続ければ道はおのずから開ける。
+おろか|别说…连…|N + はおろか|递进|漢字はおろか、ひらがなも読めなかった。
+かいがある|有…的价值|Vた/名詞の + かいがある|评价|練習したかいがあって合格できた。
+が最後|一旦…就…|Vた + が最後|条件|彼が決めたが最後、誰も止められない。
+かたがた|顺便、兼作|N + かたがた|目的|お礼かたがたご挨拶に伺います。
+かたわら|一边…一边…|Vる/Nの + かたわら|并列|会社に勤めるかたわら研究を続けている。
+がてら|顺便|Vます去ます/N + がてら|目的|散歩がてら郵便局に寄った。
+かと思いきや|原以为…却…|文 + かと思いきや|转折|勝ったかと思いきや、最後に逆転された。
+かれこれ|大约、差不多|かれこれ + 数量|数量|日本語を学んでかれこれ十年になる。
+からある|足有、多达|数量 + からある + N|数量强调|五キロからある荷物を背負った。
+からする|从…来看|N + からすると/からすれば|判断|態度からすると本気らしい。
+きらいがある|有…倾向|Vる/Nの + きらいがある|倾向|彼の説明は抽象的すぎるきらいがある。
+極まりない|极其…|ナA + 極まりない|强调|失礼極まりない発言だった。
+極まる|极其…|ナA + 極まる|强调|その対応は不親切極まる。
+ごとき|像…一样的|Nの/ Vる + ごとき|书面/比喻|夢のごとき時間が過ぎた。
+ごとく|如…般地|Nの/ Vる + ごとく|书面/比喻|彼は風のごとく走り去った。
+ことごとく|全部、统统|ことごとく + V|副词|計画はことごとく失敗した。
+こととて|因为…所以…|普通形 + こととて|理由|不慣れなこととて失礼があればお許しください。
+ことなしに|不…就…|Vる + ことなしに|条件|努力することなしに成功はない。
+始末だ|结果竟然…|Vる/た + 始末だ|结果|注意したのに、また遅刻する始末だ。
+ずくめ|全是…|N + ずくめ|状态|今年は良いことずくめだった。
+ずじまい|最终没能…|Vない去ない + ずじまい|结果|忙しくて映画を見ずじまいだった。
+ずにはおかない|必然会、非…不可|Vない去ない + ずにはおかない|必然|彼の言葉は人を感動させずにはおかない。
+ずにはすまない|不…不行|Vない去ない + ずにはすまない|义务|迷惑をかけた以上、謝らずにはすまない。
+ずとも|即使不…|Vない去ない + ずとも|让步|言わずとも気持ちは伝わる。
+そばから|刚…就…|Vる/た + そばから|反复|覚えたそばから忘れてしまう。
+ただ〜のみ|只有、仅仅|ただ + 文 + のみ|限定|今はただ努力するのみだ。
+ただではおかない|不会轻易放过|ただでは + Vない|强意|約束を破ったらただではおかない。
+たところで|即使…也…|Vた + ところで|让步|今さら謝ったところで許されない。
+だに|连…都…|N/Vる + だに|书面/极端|想像するだに恐ろしい。
+たりとも|即使…也不|数量 + たりとも + 否定|强调否定|一分たりとも無駄にできない。
+たるもの|身为…应该…|N + たるもの|评价/义务|教師たるもの学び続けるべきだ。
+つ〜つ|时而…时而…|Vます去ます + つ + Vます去ます + つ|反复|行きつ戻りつ考えた。
+っぱなし|一直…着不管|Vます去ます + っぱなし|状态|窓を開けっぱなしにしないで。
+であれ|无论…|N + であれ|让步|誰であれ規則は守るべきだ。
+であれ〜であれ|无论…还是…|N + であれ + N + であれ|让步|学生であれ社会人であれ学びは必要だ。
+てからというもの|自从…之后|Vて + からというもの|时间|子どもが生まれてからというもの生活が変わった。
+でなくてなんだろう|不是…又是什么|N + でなくてなんだろう|强调|これが愛でなくてなんだろう。
+ではあるまいし|又不是…|N/普通形 + ではあるまいし|否定理由|子どもではあるまいし、自分で決めなさい。
+てはかなわない|…得受不了|Vて/イAくて/ナAで + はかなわない|感情|毎日残業ではかなわない。
+てはばからない|公然声称…|Vて + はばからない|态度|彼は自分が正しいと言ってはばからない。
+ても差し支えない|即使…也没关系|Vても + 差し支えない|许可|ここに名前を書いても差し支えない。
+ても始まらない|即使…也无济于事|Vても + 始まらない|无效|後悔しても始まらない。
+ても知らない|如果…我可不管|Vても + 知らない|警告|無理をして倒れても知らないよ。
+てやまない|衷心地…|Vて + やまない|情感|皆様の成功を願ってやみません。
+とあって|因为…所以|普通形 + とあって|理由|連休とあって駅は混雑している。
+とあれば|如果是…的话|普通形 + とあれば|条件|必要とあればすぐに行きます。
+といい〜といい|无论…还是…都…|N + といい + N + といい|评价|味といい香りといい申し分ない。
+という|所有的…、每一个…|N + という + N|强调全体|通りという通りに人があふれていた。
+というか〜というか|说是…还是说…|文 + というか + 文 + というか|说明|悔しいというか情けないというか、複雑だ。
+というところだ|大概是…程度|数量/文 + というところだ|程度|完成まであと一週間というところだ。
+といえども|即使…也…|N/普通形 + といえども|让步|専門家といえども間違えることはある。
+といったところだ|也就是…左右|数量/文 + といったところだ|程度|参加者は十人といったところだ。
+といわず〜といわず|不论…还是…|N + といわず + N + といわず|全体|顔といわず手といわず泥だらけだ。
+ときたら|说到…可真是|N + ときたら|话题/评价|彼ときたらまた資料を忘れた。
+ところを|在…之时却…|Vる/た/ている + ところを|场面|お忙しいところをありがとうございます。
+としたところで|即使作为…也…|普通形 + としたところで|让步|成功したところで満足はできない。
+とて|即使…也…|N + とて|让步|私とて不安がないわけではない。
+とは|竟然…|普通形 + とは|惊讶|彼が辞めるとは思わなかった。
+とはいえ|虽说…但是…|文 + とはいえ|转折|春とはいえ、朝はまだ寒い。
+ともあろう|身为…竟然…|N + ともあろう + N|批评|医者ともあろう人が説明を怠った。
+ともなく|不经意地…|Vる + ともなく|无意识|窓の外を見るともなく見ていた。
+ともなると|一到…就…|N + ともなると|条件|三月ともなると花粉が増える。
+ないではおかない|一定会让…|Vない + ではおかない|必然|この映画は観客を泣かないではおかない。
+ないではすまない|不…不行|Vない + ではすまない|义务|壊したなら弁償しないではすまない。
+ないまでも|即使不到…至少…|Vない + までも|让步|完璧ではないまでも十分使える。
+ないものでもない|并非不…|Vない + ものでもない|部分肯定|条件次第では協力しないものでもない。
+ながらに|保持…状态|N/ Vます去ます + ながらに|状态|彼は生まれながらに才能があった。
+ながらも|虽然…但是…|Vます去ます/イA/ナA + ながらも|转折|不安ながらも挑戦した。
+なくしては|如果没有…就不能…|N + なくしては|条件|努力なくしては合格できない。
+なしに|没有…就…|N + なしに|条件|許可なしに入室できない。
+ならでは|只有…才有|N + ならでは|限定|京都ならではの雰囲気を味わった。
+なり|一…就…|Vる + なり|时间|彼は帰るなり寝てしまった。
+なりとも|哪怕…也…|N + なりとも|最低限|一言なりとも返事がほしい。
+なりに|以…自己的方式|N/普通形 + なりに|适应|新人なりに努力している。
+にあって|处于…之中|N + にあって|场面|厳しい状況にあって冷静さを失わない。
+に至って|直到…才…|N/Vる + に至って|时间|事態が悪化するに至って対策を始めた。
+に至っては|至于…竟然…|N + に至っては|话题|部長に至っては会議にも来なかった。
+に至る|达到…、直到…|N/Vる + に至る|过程|合格に至るまで長い道のりだった。
+に至るまで|甚至到…都…|N + に至るまで|范围|細部に至るまで確認した。
+におかれましては|对…的尊敬表达|N + におかれましては|敬语|皆様におかれましてはご健勝のことと存じます。
+にかかっている|取决于…|N + にかかっている|依存|成功は準備にかかっている。
+にかこつけて|以…为借口|N + にかこつけて|理由借口|出張にかこつけて観光した。
+にかたくない|不难…|Vる/N + にかたくない|判断|彼の苦労は想像にかたくない。
+にして|在…时、既是…又是…|N + にして|书面|彼は教師にして研究者でもある。
+にしてからが|就连…也…|N + にしてからが|举例|親にしてからが彼を理解していない。
+にしてみれば|在…看来|N + にしてみれば|立场|学生にしてみれば負担が大きい。
+にしても|即使…也…|普通形 + にしても|让步|冗談にしても言い過ぎだ。
+にしろ〜にしろ|无论…还是…|普通形 + にしろ + 普通形 + にしろ|让步|行くにしろ行かないにしろ連絡して。
+に即して|根据、符合|N + に即して|依据|現実に即して計画を立てる。
+に堪えない|不忍、非常…|Vる/N + に堪えない|感情|聞くに堪えない話だった。
+に足る|值得…|Vる/N + に足る|评价|信頼に足る人物だ。
+にとどまらず|不限于…|N/Vる + にとどまらず|递进|影響は国内にとどまらず海外にも及ぶ。
+にはあたらない|不必…|Vる + にはあたらない|否定评价|驚くにはあたらない。
+には及ばない|不必…、比不上…|Vる/N + には及ばない|否定/比较|わざわざ来るには及びません。
+には無理がある|…有勉强之处|Vる/N + には無理がある|评价|一日で覚えるには無理がある。
+にひきかえ|与…相反|N + にひきかえ|对比|兄にひきかえ弟は社交的だ。
+にもまして|比…更加…|N + にもまして|比较|去年にもまして暑い。
+によらず|不论…|N + によらず|让步|年齢によらず参加できる。
+に則って|按照…|N + に則って|依据|規則に則って処理する。
+の至り|极其…|N + の至り|固定/感情|恐縮の至りです。
+の極み|极致、非常…|N + の極み|固定/强调|感激の極みです。
+はおろか|别说…就连…|N + はおろか|递进|休む時間はおろか食事の時間もない。
+ばかりか|不但…而且…|普通形 + ばかりか|递进|彼は親切なばかりか仕事も速い。
+ばこそ|正因为…才…|普通形 + ばこそ|强调理由|好きであればこそ厳しく言う。
+はさておき|…暂且不谈|N + はさておき|话题转换|冗談はさておき本題に入ろう。
+はずみ|一时、由于…势头|Vた + はずみに|契机|転んだはずみに眼鏡が壊れた。
+べからざる|不应该…的|Vる + べからざる + N|禁止|許すべからざる行為だ。
+べく|为了…|Vる + べく|目的|合格すべく毎日勉強している。
+べくして|注定会…|Vる + べくして + Vた|必然|彼は勝つべくして勝った。
+べし|应该、必须|Vる + べし|书面义务|初心忘るべからず。
+ほかならない|正是…|N + にほかならない|强调|成功は努力の結果にほかならない。
+まじき|不该有的|Vる + まじき + N|禁止/批评|学生にあるまじき態度だ。
+までだ|只好…、只是…|Vる/た + までだ|限定/决心|だめなら別の方法を試すまでだ。
+までもない|没必要…|Vる + までもない|否定必要|説明するまでもない。
+まみれ|满是…|N + まみれ|状态|汗まみれになって働いた。
+めく|带有…气息|N + めく|变化|春めいた風が吹く。
+もさることながら|…自不必说，…更…|N + もさることながら|递进|デザインもさることながら性能が良い。
+ものを|本来…却…|普通形 + ものを|遗憾|早く言えば助けたものを。
+ものと思われる|被认为…|普通形 + ものと思われる|判断|原因は過労によるものと思われる。
+や否や|刚…就…|Vる + や否や|时间|ベルが鳴るや否や学生は走り出した。
+ゆえ|因为…|Nの/普通形 + ゆえ|书面理由|若さゆえの失敗もある。
+ようが|无论怎样…|V意向形 + が|让步|何を言おうが気にしない。
+ようが〜まいが|无论…与否|V意向形 + が + Vるまいが|让步|行こうが行くまいが自由だ。
+ようにも〜ない|想…也不能…|V意向形 + にも + V可能ない|不能|眠ろうにも眠れない。
+をおいて|除了…没有…|N + をおいて|限定|彼をおいて適任者はいない。
+を限りに|以…为截止|N + を限りに|时间|今日を限りに退職します。
+を皮切りに|以…为开端|N + を皮切りに|起点|東京を皮切りに全国を回る。
+を禁じ得ない|禁不住…|N + を禁じ得ない|情感|彼の話に涙を禁じ得なかった。
+を蔑ろにする|轻视、忽视|N + をないがしろにする|态度|安全をないがしろにしてはいけない。
+を控えて|面临…|N + を控えて|时间|試験を控えて緊張している。
+を踏まえて|基于…|N + を踏まえて|依据|結果を踏まえて改善する。
+を振り出しに|以…为起点|N + を振り出しに|起点|大阪を振り出しに旅を始めた。
+を経て|经过…|N + を経て|过程|研修を経て配属された。
+を前にして|面对…即将…|N + を前にして|场面|本番を前にして眠れない。
+をもって|以…、凭…|N + をもって|手段/时间|本日をもって終了します。
+をものともせず|不顾…|N + をものともせず|让步|悪天候をものともせず出発した。
+を余儀なくされる|被迫…|N + を余儀なくされる|被动|計画の変更を余儀なくされた。
+をよそに|不顾…|N + をよそに|让步|周囲の心配をよそに彼は出発した。
+んがために|为了…|Vない去ない + んがために|目的|夢を実現せんがために努力する。
+んばかりに|几乎要…似的|Vない去ない + んばかりに|样态|泣かんばかりに頼んだ。
+たら最後|一旦…就完了|Vた + ら最後|条件|油断したら最後、負けてしまう。
+とは打って変わって|与…截然不同|N/文 + とは打って変わって|对比|昨日とは打って変わって今日は晴れた。
+も同然だ|几乎等于…|N + も同然だ|评价|準備不足では失敗したも同然だ。
+にもほどがある|…也该有个度|N/普通形 + にもほどがある|批评|冗談にもほどがある。
+に越したことはない|最好是…|Vる/N + に越したことはない|建议|早いに越したことはない。
+ともすると|动不动就、往往|ともすると + 文|倾向|人はともすると楽な道を選ぶ。
+まんざらでもない|并非完全不好|まんざらでもない|评价|褒められて彼もまんざらでもない様子だ。
+やましい|心中有愧的|やましい + N/気持ち|形容|やましいことがなければ堂々としていればいい。
+余儀ない|不得已|N + は余儀ない|状态|計画の中止は余儀ない。
+か否か|是否…|普通形 + か否か|选择|参加するか否かを明日までに知らせてください。
+たとえ〜ようとも|即使…也…|たとえ + V意向形 + とも|让步|たとえ失敗しようとも諦めない。
+いかにも〜らしい|非常像…|いかにも + N + らしい|样态|いかにも専門家らしい説明だった。
+さぞ〜だろう|想必很…|さぞ + 文 + だろう|推测|一人で大変だったので、さぞ疲れただろう。
+何ら〜ない|丝毫不…|何ら + 否定|否定|その説明には何ら問題がない。
+ひとえに|完全、全靠|ひとえに + N/おかげ|副词|合格はひとえに先生のおかげです。
+まして|更不用说…|文。まして + 文|递进|漢字も難しい。まして文章はなおさらだ。
+ましてや|更何况…|ましてや + 文|递进|大人でも難しい。ましてや子どもには無理だ。
+概して|一般来说|概して + 文|副词|今年の受験生は概して読解が強い。
+ことによると|也许、可能|ことによると + 文|推测|ことによると試験日が変わるかもしれない。
+いずれにしても|无论如何|いずれにしても + 文|连接|いずれにしても準備は必要だ。
+いずれも|全都|いずれも + 文|全体|候補者はいずれも優秀だ。
+ともかく|总之、暂且不论|Nはともかく/ともかく + 文|话题|理由はともかく、まず謝るべきだ。
+なまじ|半吊子反而…|なまじ + 文|副词|なまじ知識があるだけに迷ってしまう。
+やけに|非常、过分地|やけに + 形容詞/動詞|副词|今日はやけに静かだ。
+ろくに〜ない|没好好地…|ろくに + 否定|否定|忙しくてろくに食事もしていない。
+まして〜ない|更不可能…|まして + 否定|否定|一時間では無理だ。まして十分では終わらない。
+およそ〜ない|完全不…|およそ + 否定|否定|彼の態度はおよそ理解できない。
+からには|既然…就…|普通形 + からには|责任|受けるからには合格を目指す。
+以上は|既然…就…|普通形 + 以上は|责任|約束した以上は守らなければならない。
+からこそ|正因为…才…|普通形 + からこそ|强调理由|難しいからこそ挑戦する価値がある。
+だけましだ|幸好还算…|普通形 + だけましだ|评价|雨が止んだだけましだ。
+だけのことはある|不愧是…|N/普通形 + だけのことはある|评价|高いだけのことはあって品質が良い。
+と相まって|与…相结合|N + と相まって|组合|努力が運と相まって成功した。
+と相俟って|与…相结合|N + と相俟って|书面组合|需要増と相俟って価格が上がった。
+とばかりに|仿佛在说…|文 + とばかりに|样态|彼は任せろとばかりにうなずいた。
+ばそれまでだ|…就完了/也就那样|Vば + それまでだ|结果|本人が嫌ならそれまでだ。
+にもかかわらず|尽管…仍…|普通形 + にもかかわらず|转折|雨にもかかわらず試合は行われた。
+ものなら|如果能…的话|V可能る + ものなら|假设|できるものならやってみたい。
+ものとして|作为…|N/普通形 + ものとして|前提|参加するものとして準備する。
+ものとする|规定为…|普通形 + ものとする|规定|答案は一つだけ選ぶものとする。
+ようでは|如果…的话就…|普通形 + ようでは|负面条件|この程度で諦めるようでは合格は難しい。
+ようとする|刚要…、试图…|V意向形 + とする|动作|出かけようとした時に電話が鳴った。
+ようによっては|根据做法可能…|Vます去ます + ようによっては|条件|考えようによっては良い機会だ。
+に先立って|在…之前|N/Vる + に先立って|时间|試験に先立って説明がある。
+に照らして|按照、参照|N + に照らして|依据|規則に照らして判断する。
+に準じて|依照、参照|N + に準じて|依据|前例に準じて処理する。
+に沿って|沿着、按照|N + に沿って|依据|方針に沿って進める。
+に伴って|随着…|N/Vる + に伴って|变化|人口の増加に伴って問題も増えた。
+に応じて|根据…|N + に応じて|对应|能力に応じて仕事を任せる。
+につけ|每当…就…|Vる/N + につけ|感情契机|写真を見るにつけ故郷を思い出す。
+につけ〜につけ|无论…还是…|Vる/N + につけ + Vる/N + につけ|并列|嬉しいにつけ悲しいにつけ彼女に話す。
+に先駆けて|率先、在…之前|N + に先駆けて|时间|他社に先駆けて新製品を出した。
+に反して|违反、与…相反|N + に反して|对比|予想に反して売上は伸びた。
+にひきかえて|与…相反|N + にひきかえて|对比|昨年にひきかえて今年は忙しい。
+に基づいて|基于…|N + に基づいて|依据|データに基づいて分析する。
+にわたって|长达、涉及|N + にわたって|范围|三日間にわたって会議が開かれた。
+をめぐって|围绕…|N + をめぐって|话题|方針をめぐって議論が続いた。
+を問わず|不问、不论|N + を問わず|让步|経験を問わず応募できる。
+を契機に|以…为契机|N + を契機に|契机|留学を契機に考え方が変わった。
+を機に|趁…机会|N + を機に|契机|卒業を機に引っ越した。
+を通して|通过、整个…期间|N + を通して|手段/期间|一年を通して温暖だ。
+を通じて|通过、整个…期间|N + を通じて|手段/期间|友人を通じて知り合った。
+をはじめ|以…为首|N + をはじめ|举例|東京をはじめ各地で開催される。
+を抜きにして|撇开…不谈|N + を抜きにして|排除|彼の協力を抜きにして成功はない。
+を境に|以…为界|N + を境に|转折点|結婚を境に生活が変わった。
+を顧みず|不顾…|N + を顧みず|让步|危険を顧みず救助に向かった。
+`;
+
+const readings = [
+  {
+    title:"官方公开 N1 阅读样题入口",
+    type:"官方公开资料",
+    lead:"点击资料页可打开 JLPT 官方公开样题 PDF。这里不复制整套题文，避免版权问题。",
+    passage:"官方样题 PDF 中包含 N1 言语知识、语法、阅读和听力的问题例。建议第一次按 110 分钟完整计时完成，第二次再逐题复盘。",
+    questions:["训练法：先做题，不查词；复盘时标记题干定位句、转折词、指示词。"],
+    answer:"入口在资料页：N1 样题 PDF 与答案 PDF。"
+  },
+  {
+    title:"短文：便利さと判断",
+    type:"原创仿真・内容理解短文",
+    lead:"目标：抓住作者对“便利”的保留态度。",
+    passage:"便利な道具が増えると、私たちは選択にかける時間を減らせる。だが、選ばなくてよい状態が続くと、何を大切にしたいのかを考える機会まで失われかねない。道具は判断を助けるものであって、判断そのものを引き受けるものではない。便利さを享受しつつも、最後に決める責任は自分に残しておきたい。",
+    questions:["1. 筆者が最も言いたいことは何か。","2. 「失われかねない」とあるが、何が失われる可能性があるか。"],
+    answer:"1. 便利な道具を使っても、最終判断の責任は自分で持つべきだ。2. 自分が何を大切にしたいかを考える機会。"
+  },
+  {
+    title:"中文：働き方の余白",
+    type:"原创仿真・因果关系",
+    lead:"目标：识别原因、让步和作者建议。",
+    passage:"効率化は多くの職場で歓迎される。確かに、単純作業を減らせば、重要な課題に時間を使える。しかし、予定が隙間なく埋められた状態では、問題に気づくための余白がなくなる。新しい発想は、手を止めて周囲を眺める時間から生まれることも少なくない。効率を追求するなら、何もしないように見える時間まで削るのではなく、それがどのような役割を果たしているのかを見極める必要がある。",
+    questions:["1. 筆者は効率化を否定しているか。","2. 余白にはどんな役割があるか。"],
+    answer:"1. 否定していない。単純作業削減の利点を認めたうえで、余白まで削る危険を述べている。2. 問題に気づき、新しい発想を生む役割。"
+  },
+  {
+    title:"统合理解：二つの意見",
+    type:"原创仿真・统合理解",
+    lead:"目标：比较两段文字的共同点和差异。",
+    passage:"A：語学学習では、正確さを重視すべきだ。誤った形を何度も使うと、その癖を直すのに時間がかかる。初期段階こそ、文法や発音を丁寧に確認したい。\n\nB：正確さは重要だが、間違いを恐れて使わなければ上達は遅れる。実際に使い、通じなかった経験から必要な知識を学ぶことも多い。完璧になってから話すのではなく、話しながら整えていく姿勢が大切だ。",
+    questions:["1. A と B の共通点は何か。","2. B が A と異なる点は何か。"],
+    answer:"1. どちらも正確さの重要性を認めている。2. B は間違いながら実際に使うことも上達に必要だと考えている。"
+  },
+  {
+    title:"信息检索：講座案内",
+    type:"原创仿真・信息检索",
+    lead:"目标：快速定位条件匹配信息。",
+    passage:"市民日本語講座のお知らせ\n上級読解クラス：毎週火曜 19:00-20:30。対象は新聞社説が読める学習者。参加費月4,000円。\nビジネス表現クラス：毎週木曜 18:30-20:00。対象は敬語を学びたい社会人。参加費月5,000円。\n試験対策クラス：毎週土曜 10:00-12:00。対象はJLPT N1/N2受験予定者。模擬問題を扱う。参加費月6,000円。初回のみ無料見学可。",
+    questions:["1. N1 対策をしたい人が選ぶべきクラスはどれか。","2. 無料見学ができるのはどのクラスか。"],
+    answer:"1. 試験対策クラス。2. 試験対策クラスのみ初回無料見学可。"
+  }
+];
+
+const grammar = grammarRaw.trim().split("\n").map((line, i) => {
+  const [pattern, meaning, form, category, example] = line.split("|");
+  return { id:i+1, pattern, meaning, form, category, example };
+});
+const state = JSON.parse(localStorage.getItem("n1-state") || '{"fav":[],"done":[]}');
+const notes = localStorage.getItem("n1-notes") || "";
+let currentQuiz = null;
+let currentReading = 0;
+
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+function save(){ localStorage.setItem("n1-state", JSON.stringify(state)); updateStats(); renderGrammar(); }
+function updateStats(){
+  $("#total").textContent = grammar.length;
+  $("#favCount").textContent = state.fav.length;
+  $("#doneCount").textContent = state.done.length;
+  const pct = Math.round(state.done.length / grammar.length * 100);
+  $("#progressText").textContent = pct + "%";
+  $("#bar").style.width = pct + "%";
+}
+function fillCats(){
+  [...new Set(grammar.map(g => g.category))].sort().forEach(c => {
+    const o = document.createElement("option"); o.value=c; o.textContent=c; $("#cat").appendChild(o);
+  });
+}
+function filtered(){
+  const q = $("#q").value.trim().toLowerCase();
+  const cat = $("#cat").value, view = $("#view").value;
+  return grammar.filter(g => {
+    const text = [g.pattern,g.meaning,g.form,g.category,g.example].join(" ").toLowerCase();
+    if (q && !text.includes(q)) return false;
+    if (cat && g.category !== cat) return false;
+    if (view === "fav" && !state.fav.includes(g.id)) return false;
+    if (view === "todo" && state.done.includes(g.id)) return false;
+    if (view === "done" && !state.done.includes(g.id)) return false;
+    return true;
+  });
+}
+function renderGrammar(){
+  const grid = $("#grammarGrid");
+  grid.innerHTML = "";
+  filtered().forEach(g => {
+    const fav = state.fav.includes(g.id), done = state.done.includes(g.id);
+    const el = document.createElement("article");
+    el.className = "card";
+    el.innerHTML = `
+      <div class="grammar-head">
+        <div><div class="pattern jp">${g.pattern}</div><div class="meaning">${g.meaning}</div></div>
+        <span class="badge">${g.category}</span>
+      </div>
+      <div class="meta"><b>接续：</b><span class="jp">${g.form}</span></div>
+      <div class="meta"><b>例句：</b><span class="jp">${g.example}</span></div>
+      <div class="actions">
+        <button class="tiny" data-act="fav" data-id="${g.id}">${fav ? "已收藏" : "收藏"}</button>
+        <button class="tiny" data-act="done" data-id="${g.id}">${done ? "已掌握" : "标记掌握"}</button>
+      </div>`;
+    grid.appendChild(el);
+  });
+}
+function toggle(list, id){
+  const a = state[list], i = a.indexOf(id);
+  if (i >= 0) a.splice(i,1); else a.push(id);
+  save();
+}
+function newQuiz(){
+  const pool = filtered().length ? filtered() : grammar;
+  const g = pool[Math.floor(Math.random()*pool.length)];
+  currentQuiz = g;
+  const wrongs = grammar.filter(x => x.id !== g.id).sort(() => Math.random()-.5).slice(0,3);
+  const choices = [g, ...wrongs].sort(() => Math.random()-.5);
+  $("#quizContent").innerHTML = `
+    <div class="badge">中文意思选择</div>
+    <h2 class="jp">${g.pattern}</h2>
+    <p class="meta"><b>接续：</b><span class="jp">${g.form}</span></p>
+    ${choices.map(c => `<button class="choice" data-answer="${c.id === g.id}">${c.meaning}</button>`).join("")}
+    <p class="meta jp">${g.example}</p>`;
+}
+function renderReadings(){
+  $("#readingList").innerHTML = readings.map((r,i)=>`<button class="${i===currentReading?'active':''}" data-read="${i}">${r.title}</button>`).join("");
+  showReading(0);
+}
+function showReading(i){
+  currentReading = i; const r = readings[i];
+  $("#readTitle").textContent = r.title; $("#readType").textContent = r.type; $("#readLead").textContent = r.lead;
+  $("#passage").textContent = r.passage;
+  $("#questions").innerHTML = r.questions.map(q=>`<p class="meta">${q}</p>`).join("");
+  $("#readAnswer").textContent = r.answer; $("#readAnswer").classList.remove("show");
+  $$("[data-read]").forEach(b => b.classList.toggle("active", Number(b.dataset.read)===i));
+}
+
+$$("nav button").forEach(b => b.addEventListener("click", () => {
+  $$("nav button").forEach(x=>x.classList.remove("active")); b.classList.add("active");
+  $$(".section").forEach(s=>s.classList.remove("active")); $("#" + b.dataset.tab).classList.add("active");
+}));
+["q","cat","view"].forEach(id => $("#" + id).addEventListener("input", renderGrammar));
+$("#reset").addEventListener("click", () => { $("#q").value=""; $("#cat").value=""; $("#view").value=""; renderGrammar(); });
+$("#grammarGrid").addEventListener("click", e => {
+  const btn = e.target.closest("button[data-act]"); if (!btn) return;
+  toggle(btn.dataset.act === "fav" ? "fav" : "done", Number(btn.dataset.id));
+});
+$("#newQuiz").addEventListener("click", newQuiz);
+$("#markFromQuiz").addEventListener("click", () => { if(currentQuiz && !state.done.includes(currentQuiz.id)){ state.done.push(currentQuiz.id); save(); }});
+$("#quizContent").addEventListener("click", e => {
+  const btn = e.target.closest(".choice"); if(!btn) return;
+  btn.classList.add(btn.dataset.answer === "true" ? "good" : "bad");
+});
+$("#readingList").addEventListener("click", e => { const b=e.target.closest("[data-read]"); if(b) showReading(Number(b.dataset.read)); });
+$("#toggleAns").addEventListener("click", () => $("#readAnswer").classList.toggle("show"));
+$("#notes").value = notes;
+$("#notes").addEventListener("input", e => localStorage.setItem("n1-notes", e.target.value));
+
+fillCats(); updateStats(); renderGrammar(); newQuiz(); renderReadings();
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
+  </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+  "name": "JLPT N1 私人备考",
+  "short_name": "N1备考",
+  "description": "JLPT N1 语法、测验与阅读训练离线 App",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fbfcfa",
+  "theme_color": "#0e7c66",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
