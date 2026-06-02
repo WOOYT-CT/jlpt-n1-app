@@ -65,10 +65,13 @@
     .resource-card p { margin:6px 0; }
     .resource-card .linkbtn { margin-top:8px; }
     .tagline { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+    .vocab-grid { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:10px; }
+    .vocab-word { font-size:22px; font-weight:850; line-height:1.35; }
+    ruby rt { color:var(--muted); font-size:.58em; font-weight:600; }
     @media (max-width: 860px) {
       .top, .split, .reading { display:block; }
       nav { margin-top:12px; }
-      .stats, .grid, .resource-grid { grid-template-columns:1fr; }
+      .stats, .grid, .resource-grid, .vocab-grid { grid-template-columns:1fr; }
       .toolbar { grid-template-columns:1fr; }
       .pattern { font-size:21px; }
     }
@@ -83,6 +86,7 @@
       </div>
       <nav>
         <button data-tab="grammar" class="active">语法</button>
+        <button data-tab="vocab">词汇</button>
         <button data-tab="quiz">测验</button>
         <button data-tab="reading">阅读</button>
         <button data-tab="channels">渠道</button>
@@ -107,6 +111,26 @@
         <button id="reset">清空筛选</button>
       </div>
       <div id="grammarGrid" class="grid"></div>
+    </section>
+
+    <section id="vocab" class="section">
+      <div class="card">
+        <h2>N1 高频必备词汇</h2>
+        <p class="meta">JLPT 官方不公开唯一词汇表；这里先放全网常见 N1 词表中反复出现、新闻和读解里高频的核心词。下方也保留全量外部词表入口，方便继续扩充。</p>
+        <div class="toolbar" style="grid-template-columns:1fr 160px 160px 120px">
+          <input id="vocabQ" placeholder="搜索：漢字 / ひらがな / 中文意思">
+          <select id="vocabCat"><option value="">全部类别</option></select>
+          <select id="vocabView"><option value="">全部词汇</option><option value="fav">只看收藏</option><option value="todo">未掌握</option><option value="done">已掌握</option></select>
+          <button id="vocabReset">清空</button>
+        </div>
+        <div class="pillrow">
+          <a class="linkbtn" href="https://jlptsensei.com/jlpt-n1-vocabulary-list/" target="_blank">JLPT Sensei N1 词表</a>
+          <a class="linkbtn" href="https://jlpt.quest/en/n1/vocabulary/list" target="_blank">JLPT.quest N1 词表</a>
+          <a class="linkbtn" href="https://tangorin.com/vocabulary/65001" target="_blank">Tangorin N1 词表</a>
+          <a class="linkbtn" href="https://www.mlcjapanese.co.jp/Download/N1_Vocabulary.pdf" target="_blank">MLC 旧 1 级词汇 PDF</a>
+        </div>
+      </div>
+      <div id="vocabGrid" class="vocab-grid" style="margin-top:10px"></div>
     </section>
 
     <section id="quiz" class="section">
@@ -176,26 +200,6 @@
           <p class="meta">看法：第一遍日语字幕看懂情节；第二遍选 5 分钟精听；第三遍跟读 10 句自然表达。</p>
           <a class="linkbtn" href="https://www.jff.jpf.go.jp/" target="_blank">JFF Theater 免费日语电影</a>
         </div>
-      </div>
-      <div class="resource-grid" style="margin-top:10px">
-        <article class="card resource-card">
-          <h3>免费合法片源</h3>
-          <p class="meta">JFF Theater 由日本国际交流基金运营，提供免费的日本电影、剧集和文化视频，片单会随时间轮换，部分内容需要注册账号。</p>
-          <div class="tagline"><span class="badge">官方免费</span><span class="badge">日语输入</span><span class="badge">多语言字幕</span></div>
-          <a class="linkbtn" href="https://www.jff.jpf.go.jp/" target="_blank">直接看 JFF Theater</a>
-        </article>
-        <article class="card resource-card">
-          <h3>怎么选片</h3>
-          <p class="meta">优先选现实题材、家庭、校园、职场、纪录片。动作片和悬疑片也能练听力，但台词密度和日常表达不一定最高。</p>
-          <div class="tagline"><span class="badge">家庭</span><span class="badge">职场</span><span class="badge">纪录片</span></div>
-          <a class="linkbtn" href="https://www.jff.jpf.go.jp/films/" target="_blank">查看当前片单</a>
-        </article>
-        <article class="card resource-card">
-          <h3>精听任务</h3>
-          <p class="meta">每次只选 5 分钟：先不看字幕听一遍，再开日语/外语字幕确认，最后摘 10 句台词写到计划页笔记。</p>
-          <div class="tagline"><span class="badge">5 分钟</span><span class="badge">10 句台词</span><span class="badge">跟读</span></div>
-          <a class="linkbtn" href="https://www.jff.jpf.go.jp/about/" target="_blank">了解 JFF Theater</a>
-        </article>
       </div>
       <div class="card" style="margin-top:10px">
         <h3>出口日语 N1 文法视频</h3>
@@ -505,21 +509,131 @@ const readings = [
   }
 ];
 
+const vocabRaw = `
+愛想|あいそ|亲切；好感；应酬|名词|愛想がいい人は職場で信頼されやすい。
+曖昧|あいまい|暧昧；不明确|な形容词|曖昧な返事では判断できない。
+悪化|あっか|恶化|名词/する动词|景気の悪化が生活に影響している。
+圧倒的|あっとうてき|压倒性的|な形容词|圧倒的な差で勝った。
+案の定|あんのじょう|果然；不出所料|副词|案の定、会議は長引いた。
+意向|いこう|意向；打算|名词|本人の意向を確認する。
+一概に|いちがいに|一概地|副词|一概に悪いとは言えない。
+一連|いちれん|一连串|名词|一連の出来事を整理する。
+一括|いっかつ|一并；总括|名词/する动词|書類を一括して提出する。
+一律|いちりつ|一律；统一|名词/な形容词|料金を一律にする。
+運営|うんえい|运营；管理|名词/する动词|サイトの運営を見直す。
+円滑|えんかつ|顺利；圆滑|な形容词|交渉を円滑に進める。
+沿革|えんかく|沿革；历史变迁|名词|会社の沿革を調べる。
+応急|おうきゅう|应急|名词|応急処置を行う。
+横領|おうりょう|侵吞；挪用|名词/する动词|公金を横領した疑いがある。
+改革|かいかく|改革|名词/する动词|制度改革が求められている。
+介入|かいにゅう|介入|名词/する动词|政府が市場に介入する。
+画期的|かっきてき|划时代的|な形容词|画期的な技術が発表された。
+過密|かみつ|过密|名词/な形容词|都市の過密化が進む。
+緩和|かんわ|缓和|名词/する动词|規制を緩和する。
+還元|かんげん|还原；回馈|名词/する动词|利益を社会に還元する。
+危機感|ききかん|危机感|名词|危機感を持って対応する。
+起伏|きふく|起伏；波动|名词|感情の起伏が激しい。
+規制|きせい|规制；限制|名词/する动词|新しい規制が導入された。
+議論|ぎろん|讨论；争论|名词/する动词|議論の余地がある。
+均衡|きんこう|均衡|名词|需要と供給の均衡が崩れる。
+究極|きゅうきょく|究极；最终|名词/な形容词|究極の目的は何か。
+協調|きょうちょう|协调；协作|名词/する动词|国際協調が重要だ。
+極力|きょくりょく|尽量；竭力|副词|極力ミスを減らす。
+吟味|ぎんみ|仔细斟酌|名词/する动词|内容を十分に吟味する。
+屈折|くっせつ|弯曲；曲折|名词/する动词|屈折した感情を抱く。
+経緯|けいい|经过；原委|名词|事件の経緯を説明する。
+軽率|けいそつ|轻率|な形容词|軽率な発言は避ける。
+懸念|けねん|担忧|名词/する动词|安全性への懸念が高まる。
+顕著|けんちょ|显著|な形容词|顕著な改善が見られる。
+合意|ごうい|达成一致|名词/する动词|双方が合意に至った。
+拘束|こうそく|约束；限制；拘留|名词/する动词|時間に拘束される。
+高騰|こうとう|暴涨|名词/する动词|物価が高騰している。
+克服|こくふく|克服|名词/する动词|弱点を克服する。
+根拠|こんきょ|根据；依据|名词|発言の根拠を示す。
+錯覚|さっかく|错觉|名词/する动词|距離を錯覚する。
+暫定|ざんてい|暂定|名词/な形容词|暫定的な措置を取る。
+施策|しさく|政策措施|名词|少子化対策の施策を示す。
+支障|ししょう|障碍；妨碍|名词|業務に支障が出る。
+指摘|してき|指出|名词/する动词|問題点を指摘する。
+柔軟|じゅうなん|灵活；柔软|な形容词|柔軟に対応する。
+収支|しゅうし|收支|名词|収支のバランスを見る。
+修正|しゅうせい|修正|名词/する动词|計画を修正する。
+充実|じゅうじつ|充实；完善|名词/する动词|支援制度を充実させる。
+従来|じゅうらい|以往；传统上|名词/副词|従来の方法を見直す。
+需要|じゅよう|需求|名词|需要が高まっている。
+深刻|しんこく|严重|な形容词|人手不足が深刻だ。
+推移|すいい|推移；变化|名词/する动词|人口の推移を見る。
+遂行|すいこう|完成；执行|名词/する动词|任務を遂行する。
+是正|ぜせい|纠正|名词/する动词|格差を是正する。
+切実|せつじつ|迫切；切实|な形容词|切実な問題として受け止める。
+促進|そくしん|促进|名词/する动词|交流を促進する。
+措置|そち|措施；处理|名词/する动词|必要な措置を講じる。
+妥当|だとう|妥当；合理|な形容词|妥当な判断だ。
+達成|たっせい|达成|名词/する动词|目標を達成する。
+多岐|たき|多方面|名词|問題は多岐にわたる。
+著しい|いちじるしい|显著的；明显的|い形容词|著しい成長を遂げる。
+直面|ちょくめん|直面|名词/する动词|課題に直面する。
+停滞|ていたい|停滞|名词/する动词|経済が停滞する。
+撤回|てっかい|撤回|名词/する动词|発言を撤回する。
+展望|てんぼう|展望|名词/する动词|今後の展望を語る。
+動向|どうこう|动向|名词|市場の動向を把握する。
+同調|どうちょう|附和；同步|名词/する动词|周囲に同調する。
+透明性|とうめいせい|透明度；公开性|名词|政策の透明性を高める。
+難航|なんこう|进展困难|名词/する动词|交渉が難航する。
+把握|はあく|掌握；理解|名词/する动词|状況を正確に把握する。
+波及|はきゅう|波及|名词/する动词|影響が各地に波及する。
+抜本的|ばっぽんてき|根本性的|な形容词|抜本的な改革が必要だ。
+反映|はんえい|反映|名词/する动词|意見を政策に反映する。
+批判|ひはん|批判|名词/する动词|対応に批判が集まる。
+逼迫|ひっぱく|紧迫；吃紧|名词/する动词|医療体制が逼迫する。
+普及|ふきゅう|普及|名词/する动词|生成AIが急速に普及する。
+不備|ふび|不完善；缺陷|名词|制度の不備を補う。
+紛争|ふんそう|纷争|名词|地域紛争が続く。
+変革|へんかく|变革|名词/する动词|社会の変革を促す。
+方針|ほうしん|方针|名词|今後の方針を決める。
+補償|ほしょう|补偿|名词/する动词|損害を補償する。
+見解|けんかい|见解|名词|専門家の見解を聞く。
+見通し|みとおし|预期；前景|名词|回復の見通しが立たない。
+模索|もさく|摸索|名词/する动词|解決策を模索する。
+要因|よういん|原因；因素|名词|物価上昇の要因を分析する。
+抑制|よくせい|抑制|名词/する动词|支出を抑制する。
+余地|よち|余地|名词|改善の余地がある。
+利害|りがい|利害|名词|利害が一致する。
+履行|りこう|履行；执行|名词/する动词|契約を履行する。
+`;
+
 const grammar = grammarRaw.trim().split("\n").map((line, i) => {
   const [pattern, meaning, form, category, example] = line.split("|");
   return { id:i+1, pattern, meaning, form, category, example };
 });
+const vocab = vocabRaw.trim().split("\n").map((line, i) => {
+  const [word, reading, meaning, category, example] = line.split("|");
+  return { id:i+1, word, reading, meaning, category, example };
+});
 const state = JSON.parse(localStorage.getItem("n1-state") || '{"fav":[],"done":[]}');
+const vocabState = JSON.parse(localStorage.getItem("n1-vocab-state") || '{"fav":[],"done":[]}');
 const notes = localStorage.getItem("n1-notes") || "";
 let currentQuiz = null;
 let currentReading = 0;
 
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
+const readingMap = {
+  "反対":"はんたい","新しい":"あたらしい","方法":"ほうほう","試す":"ためす","私":"わたし","意見":"いけん","空":"そら","暗い":"くらい","雨":"あめ","降り出した":"ふりだした","会議":"かいぎ","資料":"しりょう","読んで":"よんで","家族":"かぞく","支え":"ささえ","合格":"ごうかく","理由":"りゆう","遅刻":"ちこく","認められない":"みとめられない","結果":"けっか","次":"つぎ","方針":"ほうしん","変更":"へんこう","欠席":"けっせき","扱い":"あつかい","新人":"しんじん","君":"きみ","便利":"べんり","良い":"よい","言えない":"いえない","説明":"せつめい","丁寧":"ていねい","説得力":"せっとくりょく","大切":"たいせつ","情報":"じょうほう","判断":"はんだん","高額":"こうがく","契約":"けいやく","署名":"しょめい","病気":"びょうき","発表会":"はっぴょうかい","出席":"しゅっせき","努力":"どりょく","続ければ":"つづければ","道":"みち","開ける":"ひらける","漢字":"かんじ","読めなかった":"よめなかった","練習":"れんしゅう","最後":"さいご","誰":"だれ","研究":"けんきゅう","散歩":"さんぽ","近所":"きんじょ","コンビニ":"こんびに","寄った":"よった","成功":"せいこう","失敗":"しっぱい","勉強":"べんきょう","知識":"ちしき","実際":"じっさい","経験":"けいけん","必要":"ひつよう","準備":"じゅんび","重要":"じゅうよう","社会":"しゃかい","影響":"えいきょう","問題":"もんだい","人手不足":"ひとでぶそく","物価":"ぶっか","上昇":"じょうしょう","分析":"ぶんせき","目標":"もくひょう","達成":"たっせい","改善":"かいぜん","余地":"よち","政策":"せいさく","専門家":"せんもんか","見解":"けんかい","状況":"じょうきょう","把握":"はあく"
+};
+function escReg(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+function furigana(text){
+  let out = text || "";
+  Object.entries(readingMap).sort((a,b)=>b[0].length-a[0].length).forEach(([kanji, kana]) => {
+    out = out.replace(new RegExp(escReg(kanji), "g"), `<ruby>${kanji}<rt>${kana}</rt></ruby>`);
+  });
+  return out;
+}
 function videoUrl(g){
   return "https://www.youtube.com/results?search_query=" + encodeURIComponent("出口日语 N1 文法 " + g.pattern);
 }
 function save(){ localStorage.setItem("n1-state", JSON.stringify(state)); updateStats(); renderGrammar(); }
+function saveVocab(){ localStorage.setItem("n1-vocab-state", JSON.stringify(vocabState)); renderVocab(); }
 function updateStats(){
   $("#total").textContent = grammar.length;
   $("#favCount").textContent = state.fav.length;
@@ -531,6 +645,11 @@ function updateStats(){
 function fillCats(){
   [...new Set(grammar.map(g => g.category))].sort().forEach(c => {
     const o = document.createElement("option"); o.value=c; o.textContent=c; $("#cat").appendChild(o);
+  });
+}
+function fillVocabCats(){
+  [...new Set(vocab.map(v => v.category))].sort().forEach(c => {
+    const o = document.createElement("option"); o.value=c; o.textContent=c; $("#vocabCat").appendChild(o);
   });
 }
 function filtered(){
@@ -546,6 +665,19 @@ function filtered(){
     return true;
   });
 }
+function filteredVocab(){
+  const q = $("#vocabQ").value.trim().toLowerCase();
+  const cat = $("#vocabCat").value, view = $("#vocabView").value;
+  return vocab.filter(v => {
+    const text = [v.word,v.reading,v.meaning,v.category,v.example].join(" ").toLowerCase();
+    if (q && !text.includes(q)) return false;
+    if (cat && v.category !== cat) return false;
+    if (view === "fav" && !vocabState.fav.includes(v.id)) return false;
+    if (view === "todo" && vocabState.done.includes(v.id)) return false;
+    if (view === "done" && !vocabState.done.includes(v.id)) return false;
+    return true;
+  });
+}
 function renderGrammar(){
   const grid = $("#grammarGrid");
   grid.innerHTML = "";
@@ -555,11 +687,11 @@ function renderGrammar(){
     el.className = "card";
     el.innerHTML = `
       <div class="grammar-head">
-        <div><div class="pattern jp">${g.pattern}</div><div class="meaning">${g.meaning}</div></div>
+        <div><div class="pattern jp">${furigana(g.pattern)}</div><div class="meaning">${g.meaning}</div></div>
         <span class="badge">${g.category}</span>
       </div>
-      <div class="meta"><b>接续：</b><span class="jp">${g.form}</span></div>
-      <div class="meta"><b>例句：</b><span class="jp">${g.example}</span></div>
+      <div class="meta"><b>接续：</b><span class="jp">${furigana(g.form)}</span></div>
+      <div class="meta"><b>例句：</b><span class="jp">${furigana(g.example)}</span></div>
       <div class="actions">
         <button class="tiny" data-act="fav" data-id="${g.id}">${fav ? "已收藏" : "收藏"}</button>
         <button class="tiny" data-act="done" data-id="${g.id}">${done ? "已掌握" : "标记掌握"}</button>
@@ -568,10 +700,38 @@ function renderGrammar(){
     grid.appendChild(el);
   });
 }
+function renderVocab(){
+  const grid = $("#vocabGrid");
+  grid.innerHTML = "";
+  filteredVocab().forEach(v => {
+    const fav = vocabState.fav.includes(v.id), done = vocabState.done.includes(v.id);
+    const el = document.createElement("article");
+    el.className = "card";
+    el.innerHTML = `
+      <div class="grammar-head">
+        <div>
+          <div class="vocab-word jp"><ruby>${v.word}<rt>${v.reading}</rt></ruby></div>
+          <div class="meaning">${v.meaning}</div>
+        </div>
+        <span class="badge">${v.category}</span>
+      </div>
+      <div class="meta"><b>例句：</b><span class="jp">${furigana(v.example)}</span></div>
+      <div class="actions">
+        <button class="tiny" data-vocab-act="fav" data-id="${v.id}">${fav ? "已收藏" : "收藏"}</button>
+        <button class="tiny" data-vocab-act="done" data-id="${v.id}">${done ? "已掌握" : "标记掌握"}</button>
+      </div>`;
+    grid.appendChild(el);
+  });
+}
 function toggle(list, id){
   const a = state[list], i = a.indexOf(id);
   if (i >= 0) a.splice(i,1); else a.push(id);
   save();
+}
+function toggleVocab(list, id){
+  const a = vocabState[list], i = a.indexOf(id);
+  if (i >= 0) a.splice(i,1); else a.push(id);
+  saveVocab();
 }
 function newQuiz(){
   const pool = filtered().length ? filtered() : grammar;
@@ -609,6 +769,12 @@ $("#grammarGrid").addEventListener("click", e => {
   const btn = e.target.closest("button[data-act]"); if (!btn) return;
   toggle(btn.dataset.act === "fav" ? "fav" : "done", Number(btn.dataset.id));
 });
+["vocabQ","vocabCat","vocabView"].forEach(id => $("#" + id).addEventListener("input", renderVocab));
+$("#vocabReset").addEventListener("click", () => { $("#vocabQ").value=""; $("#vocabCat").value=""; $("#vocabView").value=""; renderVocab(); });
+$("#vocabGrid").addEventListener("click", e => {
+  const btn = e.target.closest("button[data-vocab-act]"); if (!btn) return;
+  toggleVocab(btn.dataset.vocabAct === "fav" ? "fav" : "done", Number(btn.dataset.id));
+});
 $("#newQuiz").addEventListener("click", newQuiz);
 $("#markFromQuiz").addEventListener("click", () => { if(currentQuiz && !state.done.includes(currentQuiz.id)){ state.done.push(currentQuiz.id); save(); }});
 $("#quizContent").addEventListener("click", e => {
@@ -620,7 +786,7 @@ $("#toggleAns").addEventListener("click", () => $("#readAnswer").classList.toggl
 $("#notes").value = notes;
 $("#notes").addEventListener("input", e => localStorage.setItem("n1-notes", e.target.value));
 
-fillCats(); updateStats(); renderGrammar(); newQuiz(); renderReadings();
+fillCats(); fillVocabCats(); updateStats(); renderGrammar(); renderVocab(); newQuiz(); renderReadings();
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./sw.js").catch(() => {});

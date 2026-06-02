@@ -1,4 +1,4 @@
-const CACHE_NAME = "jlpt-n1-app-v4";
+const CACHE_NAME = "jlpt-n1-app-v5";
 const ASSETS = [
   "./",
   "./index.html",
