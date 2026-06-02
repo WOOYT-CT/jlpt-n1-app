@@ -60,10 +60,15 @@
     .pillrow { display:flex; gap:8px; flex-wrap:wrap; margin:10px 0; }
     .progress { height:9px; background:#e5ecea; border-radius:999px; overflow:hidden; }
     .bar { height:100%; background:linear-gradient(90deg, var(--accent), var(--gold)); width:0; }
+    .resource-grid { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:10px; }
+    .resource-card h3 { margin:0 0 7px; font-size:17px; }
+    .resource-card p { margin:6px 0; }
+    .resource-card .linkbtn { margin-top:8px; }
+    .tagline { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
     @media (max-width: 860px) {
       .top, .split, .reading { display:block; }
       nav { margin-top:12px; }
-      .stats, .grid { grid-template-columns:1fr; }
+      .stats, .grid, .resource-grid { grid-template-columns:1fr; }
       .toolbar { grid-template-columns:1fr; }
       .pattern { font-size:21px; }
     }
@@ -80,6 +85,7 @@
         <button data-tab="grammar" class="active">语法</button>
         <button data-tab="quiz">测验</button>
         <button data-tab="reading">阅读</button>
+        <button data-tab="channels">渠道</button>
         <button data-tab="plan">计划</button>
         <button data-tab="sources">资料</button>
       </nav>
@@ -129,6 +135,50 @@
           <button id="toggleAns">显示/隐藏答案解析</button>
           <div id="readAnswer" class="answer"></div>
         </div>
+      </div>
+    </section>
+
+    <section id="channels" class="section">
+      <div class="card">
+        <h2>N1 新闻与电影渠道</h2>
+        <p class="meta">给中文母语者使用的材料库：新闻练长句、逻辑和正式表达；电影练听解、语气、敬语和自然口语。建议每周固定选 3 篇新闻、1 部电影，不追求全懂，重点做表达积累。</p>
+      </div>
+      <div class="resource-grid" style="margin-top:10px">
+        <article class="card resource-card">
+          <h3>新闻入门</h3>
+          <p class="meta">NHK NEWS WEB EASY：短新闻、假名、音频，适合从 N2 过渡到 N1。先关假名读，再打开确认。</p>
+          <div class="tagline"><span class="badge">読解</span><span class="badge">听读同步</span><span class="badge">每日 1 篇</span></div>
+          <a class="linkbtn" href="https://www3.nhk.or.jp/news/easy/" target="_blank">打开 NHK Easy</a>
+        </article>
+        <article class="card resource-card">
+          <h3>新闻主力</h3>
+          <p class="meta">NHK NEWS WEB：正式新闻，常见「〜を受けて」「〜をめぐって」「〜との見方を示した」等 N1 高频表达。</p>
+          <div class="tagline"><span class="badge">正式表达</span><span class="badge">社会议题</span><span class="badge">听解速度</span></div>
+          <a class="linkbtn" href="https://www3.nhk.or.jp/news/" target="_blank">打开 NHK News</a>
+        </article>
+        <article class="card resource-card">
+          <h3>社论评论</h3>
+          <p class="meta">朝日、读卖等新闻评论适合练作者观点、论理展开、抽象词。N1 读解后期可以每周精读 2 篇。</p>
+          <div class="tagline"><span class="badge">观点题</span><span class="badge">长句</span><span class="badge">抽象表达</span></div>
+          <a class="linkbtn" href="https://www.asahi.com/" target="_blank">朝日新闻</a>
+          <a class="linkbtn" href="https://www.yomiuri.co.jp/" target="_blank">读卖新闻</a>
+        </article>
+      </div>
+      <div class="grid" style="margin-top:10px">
+        <div class="card resource-card">
+          <h3>优先新闻主题</h3>
+          <p class="meta">少子高龄化、介护、人手不足、物价上涨、工资、日元汇率、就业、外国人劳动者、防灾、气候变化、生成 AI、个人信息、外交与安全保障。</p>
+          <p class="meta">读新闻时记录：标题关键词、立场表达、因果连接、一个可以复用的句型。</p>
+        </div>
+        <div class="card resource-card">
+          <h3>电影清单</h3>
+          <p class="meta">《小偷家族》《如父如子》《东京物语》《驾驶我的车》《横道世之介》《告白》《花束般的恋爱》《海街日记》。</p>
+          <p class="meta">看法：第一遍日语字幕看懂情节；第二遍选 5 分钟精听；第三遍跟读 10 句自然表达。</p>
+        </div>
+      </div>
+      <div class="card" style="margin-top:10px">
+        <h3>一周执行模板</h3>
+        <p class="meta">周一/三/五：新闻 1 篇，整理 5 个表达。周二/四：NHK 音频听写 3 分钟。周末：电影 1 部或 30 分钟片段，摘 10 句台词。所有材料都按「表达 / 中文意思 / 原句 / 自己造句」记到计划页笔记。</p>
       </div>
     </section>
 
