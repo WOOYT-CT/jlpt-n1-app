@@ -175,7 +175,6 @@
           <p class="meta">《小偷家族》《如父如子》《东京物语》《驾驶我的车》《横道世之介》《告白》《花束般的恋爱》《海街日记》。</p>
           <p class="meta">看法：第一遍日语字幕看懂情节；第二遍选 5 分钟精听；第三遍跟读 10 句自然表达。</p>
           <a class="linkbtn" href="https://www.jff.jpf.go.jp/" target="_blank">JFF Theater 免费日语电影</a>
-          <a class="linkbtn" href="https://www.jff.jpf.go.jp/watch/independent-cinema/" target="_blank">JFF 免费独立电影</a>
         </div>
       </div>
       <div class="resource-grid" style="margin-top:10px">
@@ -197,6 +196,11 @@
           <div class="tagline"><span class="badge">5 分钟</span><span class="badge">10 句台词</span><span class="badge">跟读</span></div>
           <a class="linkbtn" href="https://www.jff.jpf.go.jp/about/" target="_blank">了解 JFF Theater</a>
         </article>
+      </div>
+      <div class="card" style="margin-top:10px">
+        <h3>出口日语 N1 文法视频</h3>
+        <p class="meta">每张语法卡片都有“出口视频”按钮，会按当前语法点在 YouTube 搜索出口日语 N1 文法。也可以直接打开完整播放列表，按顺序系统复习。</p>
+        <a class="linkbtn" href="https://www.youtube.com/playlist?list=PLynCeSdpMqxCBtZzRikWkdbRGS9csjDYT" target="_blank">出口日语 N1 文法播放列表</a>
       </div>
       <div class="card" style="margin-top:10px">
         <h3>一周执行模板</h3>
@@ -512,6 +516,9 @@ let currentReading = 0;
 
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
+function videoUrl(g){
+  return "https://www.youtube.com/results?search_query=" + encodeURIComponent("出口日语 N1 文法 " + g.pattern);
+}
 function save(){ localStorage.setItem("n1-state", JSON.stringify(state)); updateStats(); renderGrammar(); }
 function updateStats(){
   $("#total").textContent = grammar.length;
@@ -556,6 +563,7 @@ function renderGrammar(){
       <div class="actions">
         <button class="tiny" data-act="fav" data-id="${g.id}">${fav ? "已收藏" : "收藏"}</button>
         <button class="tiny" data-act="done" data-id="${g.id}">${done ? "已掌握" : "标记掌握"}</button>
+        <a class="linkbtn tiny" href="${videoUrl(g)}" target="_blank">出口视频</a>
       </div>`;
     grid.appendChild(el);
   });
